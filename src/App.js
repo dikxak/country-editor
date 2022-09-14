@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 
 import Form from './components/Form/Form';
+import Countries from './components/Country/Countries';
 
 import './App.css';
-import Countries from './components/Country/Countries';
 
 const convertToMillion = value => {
   if (Number.isNaN(value)) return 1;
@@ -14,8 +14,10 @@ const convertToMillion = value => {
 const App = () => {
   const [countriesData, setCountriesData] = useState([]);
   const [countryId, setCountryId] = useState(1);
+  const [updateItemPrevData, setUpdateItemPrevData] = useState();
+  const [updateId, setUpdateId] = useState();
 
-  const getUserData = data => {
+  const addUserData = data => {
     const id = `c${countryId}`;
 
     data.id = id;
@@ -25,14 +27,36 @@ const App = () => {
     setCountryId(prevData => ++prevData);
   };
 
-  countriesData.forEach(data => console.log(data));
+  const getUpdateId = id => {
+    let data = {};
+    data = { ...countriesData.find(el => el.id === id) };
+
+    setUpdateId(id);
+    setUpdateItemPrevData(data);
+  };
+
+  const updateUserData = data => {
+    const updateData = countriesData.find(data => data.id === updateId);
+
+    updateData.name = data.name;
+    updateData.capital = data.capital;
+    updateData.population = data.population;
+    updateData.popInMil = +convertToMillion(updateData.population);
+
+    setCountriesData(prevData => [...prevData]);
+    setUpdateItemPrevData(undefined);
+  };
 
   return (
     <div className="container">
       <h2 className="secondary-heading">Enter country details</h2>
-      <Form onGetData={getUserData} />
+      <Form
+        updateItemData={updateItemPrevData}
+        onAddData={addUserData}
+        onUpdateData={updateUserData}
+      />
       <h2 className="secondary-heading">Countries</h2>
-      <Countries data={countriesData} />
+      <Countries getUpdateId={getUpdateId} data={countriesData} />
     </div>
   );
 };

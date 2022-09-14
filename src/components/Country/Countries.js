@@ -19,6 +19,7 @@ const Countries = props => {
               name={country.name}
               population={country.popInMil}
               capital={country.capital}
+              onUpdate={props.getUpdateId.bind(null, country.id)}
             />
           );
         })

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 
 import useInput from '../../hooks/use-input';
 
@@ -6,6 +6,7 @@ import classes from './Form.module.css';
 
 const Form = props => {
   const nameRef = useRef();
+  const { updateItemData } = props;
 
   const {
     enteredInput: nameInput,
@@ -62,6 +63,21 @@ const Form = props => {
     };
   });
 
+  useEffect(() => {
+    nameRef.current.focus();
+
+    if (updateItemData) {
+      nameChangeHandler(updateItemData.name);
+      capitalChangeHandler(updateItemData.capital);
+      populationChangeHandler(updateItemData.population + '');
+    }
+  }, [
+    nameChangeHandler,
+    capitalChangeHandler,
+    populationChangeHandler,
+    updateItemData,
+  ]);
+
   const formIsValid = nameIsValid && capitalIsValid && populationIsValid;
 
   const formSubmitHandler = e => {
@@ -79,7 +95,11 @@ const Form = props => {
       population: +populationInput,
     };
 
-    props.onGetData(userData);
+    if (updateItemData) {
+      props.onUpdateData(userData);
+    } else {
+      props.onAddData(userData);
+    }
 
     nameRef.current.focus();
 
@@ -100,8 +120,9 @@ const Form = props => {
             ref={nameRef}
             placeholder="e.g. Nepal"
             value={nameInput}
-            onChange={nameChangeHandler}
-            onBlur={nameBlurHandler}
+            onChange={e => {
+              nameChangeHandler(e.target.value);
+            }}
           />
           {nameHasError && <p className="error-msg">{nameErrorMessage}</p>}
         </div>
@@ -114,8 +135,9 @@ const Form = props => {
             name="population"
             placeholder="e.g. 30286125"
             value={populationInput}
-            onChange={populationChangeHandler}
-            onBlur={populationBlurHandler}
+            onChange={e => {
+              populationChangeHandler(e.target.value);
+            }}
           />
           {populationHasError && (
             <p className="error-msg">{populationErrorMessage}</p>
@@ -130,8 +152,9 @@ const Form = props => {
             name="capital"
             placeholder="e.g. Kathmandu"
             value={capitalInput}
-            onChange={capitalChangeHandler}
-            onBlur={capitalBlurHandler}
+            onChange={e => {
+              capitalChangeHandler(e.target.value);
+            }}
           />
           {capitalHasError && (
             <p className="error-msg">{capitalErrorMessage}</p>
@@ -140,7 +163,9 @@ const Form = props => {
       </div>
 
       <div className={classes['form-action-group']}>
-        <button type="submit">Add Country</button>
+        <button type="submit">
+          {updateItemData ? 'Update Country' : 'Add Country'}
+        </button>
       </div>
     </form>
   );

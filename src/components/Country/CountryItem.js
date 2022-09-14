@@ -24,7 +24,7 @@ const CountryItem = props => {
       </p>
 
       <div className={classes['country-controls']}>
-        <button className="btn btn--edit">
+        <button onClick={props.onUpdate} className="btn btn--edit">
           <MdEdit /> Edit
         </button>
         <button className="btn btn--delete">

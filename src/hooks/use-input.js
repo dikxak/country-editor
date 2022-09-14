@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 const useInput = validateInput => {
   const [enteredInput, setEnteredInput] = useState('');
@@ -8,10 +8,10 @@ const useInput = validateInput => {
 
   const inputHasError = !inputIsValid && inputIsFocused;
 
-  const inputChangeHandler = e => {
+  const inputChangeHandler = useCallback(value => {
     setInputIsFocused(true);
-    setEnteredInput(e.target.value);
-  };
+    setEnteredInput(value);
+  }, []);
 
   const inputBlurHandler = e => {
     setInputIsFocused(true);
