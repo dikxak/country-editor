@@ -5,14 +5,24 @@ import CountryItem from './CountryItem';
 import classes from './Countries.module.css';
 
 const Countries = props => {
+  const { data } = props;
+
   return (
     <div className={classes['country-container']}>
-      <CountryItem />
-      <CountryItem />
-      <CountryItem />
-      <CountryItem />
-      <CountryItem />
-      <CountryItem />
+      {data.length === 0 ? (
+        <p className="info-msg">No any data available.</p>
+      ) : (
+        data.map(country => {
+          return (
+            <CountryItem
+              key={country.id}
+              name={country.name}
+              population={country.popInMil}
+              capital={country.capital}
+            />
+          );
+        })
+      )}
     </div>
   );
 };

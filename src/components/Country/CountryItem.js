@@ -10,14 +10,16 @@ import { MdDelete } from 'react-icons/md';
 import classes from './CountryItem.module.css';
 
 const CountryItem = props => {
+  const { name, population, capital } = props;
+
   return (
     <Card>
-      <h3 className={classes['name']}>Nepal</h3>
+      <h3 className={classes['name']}>{name}</h3>
       <p className={classes['population']}>
-        <BsPeopleFill className={classes['country-icon']} /> 30.26M People
+        <BsPeopleFill className={classes['country-icon']} /> {population} People
       </p>
       <p className={classes['capital']}>
-        <FaMapMarkerAlt className={classes['country-icon']} /> Kathmandu
+        <FaMapMarkerAlt className={classes['country-icon']} /> {capital}
       </p>
 
       <div className={classes['country-controls']}>
