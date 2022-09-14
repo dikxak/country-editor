@@ -73,7 +73,13 @@ const Form = props => {
 
     if (!formIsValid) return;
 
-    console.log(nameInput, capitalInput, populationInput);
+    const userData = {
+      name: nameInput,
+      capital: capitalInput,
+      population: +populationInput,
+    };
+
+    props.onGetData(userData);
 
     nameRef.current.focus();
 

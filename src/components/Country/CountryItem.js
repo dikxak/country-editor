@@ -16,7 +16,8 @@ const CountryItem = props => {
     <Card>
       <h3 className={classes['name']}>{name}</h3>
       <p className={classes['population']}>
-        <BsPeopleFill className={classes['country-icon']} /> {population} People
+        <BsPeopleFill className={classes['country-icon']} /> {population}M
+        People
       </p>
       <p className={classes['capital']}>
         <FaMapMarkerAlt className={classes['country-icon']} /> {capital}
