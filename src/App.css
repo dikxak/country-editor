@@ -54,3 +54,8 @@
   line-height: 1.5;
   color: #c92a2a;
 }
+
+.error-msg {
+  font-size: 1.4rem;
+  color: #ffa8a8;
+}
