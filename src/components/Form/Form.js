@@ -66,6 +66,7 @@ const Form = props => {
   useEffect(() => {
     nameRef.current.focus();
 
+    // Load the value of the update data to the form.
     if (updateItemData) {
       nameChangeHandler(updateItemData.name);
       capitalChangeHandler(updateItemData.capital);
