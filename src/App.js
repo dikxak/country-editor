@@ -5,6 +5,8 @@ import Form from './components/Form/Form';
 import Countries from './components/Country/Countries';
 import Warning from './components/Warning/Warning';
 
+import formSchema from './json/country-form-schema.json';
+
 import './App.css';
 
 const convertToMillion = value => {
@@ -14,19 +16,23 @@ const convertToMillion = value => {
 };
 
 const App = () => {
+  const { inputs } = formSchema;
+
   const [countriesData, setCountriesData] = useState([]);
   const [countryId, setCountryId] = useState(1);
   const [updateItemPrevData, setUpdateItemPrevData] = useState();
   const [updateId, setUpdateId] = useState();
   const [deleteId, setDeleteId] = useState();
 
-  const addUserData = data => {
+  const addCountryData = data => {
     const id = `c${countryId}`;
 
-    data.id = id;
-    data.popInMil = +convertToMillion(data.population);
+    const localData = { ...data };
 
-    setCountriesData(prevData => [...prevData, data]);
+    localData.id = id;
+    localData.popInMil = +convertToMillion(+localData.population);
+
+    setCountriesData(prevData => [...prevData, localData]);
     setCountryId(prevData => ++prevData);
   };
 
@@ -67,6 +73,17 @@ const App = () => {
     setDeleteId(null);
   };
 
+  const inputList = [];
+  const initializeInputList = () => {
+    for (const key in inputs) {
+      const inputObj = {
+        [key]: inputs[key],
+      };
+      inputList.push(inputObj);
+    }
+  };
+  initializeInputList();
+
   return (
     <div className="container">
       {deleteId
@@ -81,8 +98,9 @@ const App = () => {
         : ''}
       <h2 className="secondary-heading">Enter country details</h2>
       <Form
+        inputList={inputList}
         updateItemData={updateItemPrevData}
-        onAddData={addUserData}
+        onAddData={addCountryData}
         onUpdateData={updateUserData}
       />
       <h2 className="secondary-heading">Countries</h2>

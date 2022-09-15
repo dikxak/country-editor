@@ -1,0 +1,22 @@
+{
+  "inputs": {
+    "name": {
+      "type": "text",
+      "label": "Country name",
+      "placeholder": "e.g. Nepal",
+      "required": true
+    },
+    "population": {
+      "type": "number",
+      "label": "Country population",
+      "placeholder": "e.g. 30286125",
+      "required": true,
+      "min": 1
+    },
+    "capital": {
+      "type": "text",
+      "label": "Country capital",
+      "placeholder": "e.g. Kathmandu"
+    }
+  }
+}

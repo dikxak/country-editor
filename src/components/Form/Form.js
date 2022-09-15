@@ -1,172 +1,174 @@
-import React, { useRef, useEffect } from 'react';
-
-import useInput from '../../hooks/use-input';
+import React, { useState, useRef } from 'react';
 
 import classes from './Form.module.css';
 
 const Form = props => {
-  const nameRef = useRef();
-  const { updateItemData } = props;
+  const { inputList } = props;
 
-  const {
-    enteredInput: nameInput,
-    inputHasError: nameHasError,
-    inputIsValid: nameIsValid,
-    inputChangeHandler: nameChangeHandler,
-    inputBlurHandler: nameBlurHandler,
-    errorMessage: nameErrorMessage,
-    resetInput: resetName,
-  } = useInput(value => {
-    return {
-      inputIsValid: value.trim().length !== 0,
-      errorMessage: 'Country name can not be empty.',
-    };
+  // Initial error state for every input in the list.
+  const errorObj = {};
+  inputList.forEach(val => {
+    const key = Object.keys(val)[0];
+
+    errorObj[key] = { message: '', inputIsValid: false, inputIsTouched: false };
   });
 
-  const {
-    enteredInput: capitalInput,
-    inputHasError: capitalHasError,
-    inputIsValid: capitalIsValid,
-    inputChangeHandler: capitalChangeHandler,
-    inputBlurHandler: capitalBlurHandler,
-    errorMessage: capitalErrorMessage,
-    resetInput: resetCapital,
-  } = useInput(value => {
-    return {
-      inputIsValid: value.trim().length !== 0,
-      errorMessage: 'Country capital can not be empty.',
-    };
+  // Initial value state for every input in the list.
+  const inputObj = {};
+  inputList.forEach(val => {
+    const key = Object.keys(val)[0];
+
+    inputObj[key] = '';
   });
 
-  const {
-    enteredInput: populationInput,
-    inputHasError: populationHasError,
-    inputIsValid: populationIsValid,
-    inputChangeHandler: populationChangeHandler,
-    inputBlurHandler: populationBlurHandler,
-    errorMessage: populationErrorMessage,
-    resetInput: resetPopulation,
-  } = useInput(value => {
-    const inputLengthIsValid = value.trim().length !== 0;
-    const inputValueIsValid = +value > 0;
+  const inputRef = useRef();
+  const [inputValues, setInputValues] = useState(inputObj);
+  const [inputErrors, setInputErrors] = useState(errorObj);
 
-    const inputIsValid = inputLengthIsValid && inputValueIsValid;
+  const inputChangeHandler = (obj, key, e) => {
+    console.log(e.target.value);
+    const inputValue = e.target.value;
 
-    const errorMessage = !inputLengthIsValid
-      ? 'Country population can not be empty.'
-      : !inputValueIsValid
-      ? 'Country population can not be less than 1.'
-      : '';
-    return {
-      inputIsValid,
-      errorMessage,
+    const setErrorMessage = msg => {
+      setInputValues(prevValues => {
+        return { ...prevValues, [key]: inputValue };
+      });
+
+      setInputErrors(prevErrors => {
+        return {
+          ...prevErrors,
+          [key]: {
+            message: `${obj.label} ${msg}`,
+            inputIsValid: false,
+            inputIsTouched: false,
+          },
+        };
+      });
     };
-  });
 
-  useEffect(() => {
-    nameRef.current.focus();
-
-    // Load the value of the update data to the form.
-    if (updateItemData) {
-      nameChangeHandler(updateItemData.name);
-      capitalChangeHandler(updateItemData.capital);
-      populationChangeHandler(updateItemData.population + '');
+    if (inputValue.trim().length === 0) {
+      setErrorMessage(`can not be empty.`);
+    } else if (
+      obj.type === 'text' &&
+      inputValue.trim().length < obj.min &&
+      !obj.max
+    ) {
+      setErrorMessage(`must be more than or equal to ${obj.min} letters.`);
+    } else if (
+      obj.type === 'text' &&
+      inputValue.trim().length < obj.min &&
+      inputValue.trim().length > obj.max
+    ) {
+      setErrorMessage(`must be between ${obj.min} and ${obj.max} letters.`);
+    } else if (
+      obj.type === 'number' &&
+      +inputValue.trim() < obj.min &&
+      !obj.max
+    ) {
+      setErrorMessage(`value must be more than or equal to ${obj.min}.`);
+    } else if (
+      obj.type === 'number' &&
+      +inputValue < obj.min &&
+      +inputValue > obj.max
+    ) {
+      setErrorMessage(`value must be between ${obj.min} and ${obj.max}.`);
+    } else {
+      setInputValues(prevValues => {
+        return { ...prevValues, [key]: inputValue };
+      });
+      setInputErrors(prevError => {
+        return {
+          ...prevError,
+          [key]: { message: '', inputIsValid: true, inputIsTouched: true },
+        };
+      });
     }
-  }, [
-    nameChangeHandler,
-    capitalChangeHandler,
-    populationChangeHandler,
-    updateItemData,
-  ]);
-
-  const formIsValid = nameIsValid && capitalIsValid && populationIsValid;
+  };
 
   const formSubmitHandler = e => {
     e.preventDefault();
 
-    nameBlurHandler(e);
-    capitalBlurHandler(e);
-    populationBlurHandler(e);
+    let flag = false;
 
-    if (!formIsValid) return;
+    const allInvalidInput = Object.keys(inputErrors).filter(
+      key => !inputErrors[key].inputIsTouched
+    );
 
-    const userData = {
-      name: nameInput,
-      capital: capitalInput,
-      population: +populationInput,
-    };
+    allInvalidInput.forEach(key => {
+      inputList.forEach(val => {
+        if (val[key]) {
+          setInputErrors(prevData => {
+            return {
+              ...prevData,
+              [key]: {
+                message: `${val[key].label} can not be empty.`,
+                inputIsTouched: false,
+                inputIsValid: false,
+              },
+            };
+          });
+          flag = true;
+        }
+      });
+    });
 
-    if (updateItemData) {
-      props.onUpdateData(userData);
-    } else {
-      props.onAddData(userData);
-    }
+    if (flag) return;
 
-    nameRef.current.focus();
+    props.onAddData(inputValues);
 
-    resetName();
-    resetCapital();
-    resetPopulation();
+    Object.keys(inputValues).forEach(key => {
+      setInputValues(prevData => {
+        return { ...prevData, [key]: '' };
+      });
+    });
+
+    Object.keys(inputErrors).forEach(key => {
+      setInputErrors(prevData => {
+        return {
+          ...prevData,
+          [key]: { message: '', inputIsValid: false, inputIsTouched: false },
+        };
+      });
+    });
+
+    inputRef.current.focus();
+    // console.log(inputValues);
   };
+
+  console.log(inputValues);
 
   return (
     <form onSubmit={formSubmitHandler} className={classes['form']}>
       <div className={classes['form-control-group']}>
-        <div className={classes['form-group']}>
-          <label htmlFor="name">Enter name:</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            ref={nameRef}
-            placeholder="e.g. Nepal"
-            value={nameInput}
-            onChange={e => {
-              nameChangeHandler(e.target.value);
-            }}
-          />
-          {nameHasError && <p className="error-msg">{nameErrorMessage}</p>}
-        </div>
+        {inputList.map((input, i) => {
+          const key = Object.keys(input)[0];
+          const inputObj = input[key];
 
-        <div className={classes['form-group']}>
-          <label htmlFor="population">Enter population:</label>
-          <input
-            type="number"
-            id="population"
-            name="population"
-            placeholder="e.g. 30286125"
-            value={populationInput}
-            onChange={e => {
-              populationChangeHandler(e.target.value);
-            }}
-          />
-          {populationHasError && (
-            <p className="error-msg">{populationErrorMessage}</p>
-          )}
-        </div>
-
-        <div className={classes['form-group']}>
-          <label htmlFor="capital">Enter capital:</label>
-          <input
-            type="text"
-            id="capital"
-            name="capital"
-            placeholder="e.g. Kathmandu"
-            value={capitalInput}
-            onChange={e => {
-              capitalChangeHandler(e.target.value);
-            }}
-          />
-          {capitalHasError && (
-            <p className="error-msg">{capitalErrorMessage}</p>
-          )}
-        </div>
+          return (
+            <div key={key} className={classes['form-group']}>
+              <label htmlFor={key}>{inputObj.label}</label>
+              <input
+                type={inputObj.type}
+                id={key}
+                name={key}
+                ref={i === 0 ? inputRef : null}
+                placeholder={inputObj.placeholder}
+                min={inputObj.min || null}
+                max={inputObj.max || null}
+                value={inputValues[key]}
+                // required={inputObj.required || true}
+                onChange={inputChangeHandler.bind(null, inputObj, key)}
+              />
+              {inputErrors[key] && (
+                <p className="error-msg">{inputErrors[key].message}</p>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <div className={classes['form-action-group']}>
-        <button type="submit">
-          {updateItemData ? 'Update Country' : 'Add Country'}
-        </button>
+        <button type="submit">Add Country</button>
       </div>
     </form>
   );
