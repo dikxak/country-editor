@@ -20,6 +20,7 @@ const Countries = props => {
               population={country.popInMil}
               capital={country.capital}
               onUpdate={props.getUpdateId.bind(null, country.id)}
+              onDelete={props.getDeleteId.bind(null, country.id)}
             />
           );
         })

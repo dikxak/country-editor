@@ -27,7 +27,7 @@ const CountryItem = props => {
         <button onClick={props.onUpdate} className="btn btn--edit">
           <MdEdit /> Edit
         </button>
-        <button className="btn btn--delete">
+        <button onClick={props.onDelete} className="btn btn--delete">
           <MdDelete /> Delete
         </button>
       </div>
