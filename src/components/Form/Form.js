@@ -5,31 +5,32 @@ import classes from './Form.module.css';
 const Form = props => {
   const { inputList } = props;
 
-  // Initial error state for every input in the list.
   const errorObj = {};
-  inputList.forEach(val => {
-    const key = Object.keys(val)[0];
-
-    errorObj[key] = { message: '', inputIsValid: false, inputIsTouched: false };
-  });
-
-  // Initial value state for every input in the list.
   const inputObj = {};
-  inputList.forEach(val => {
-    const key = Object.keys(val)[0];
 
-    inputObj[key] = '';
+  // Initialize value and error state for every input
+  const initState = (initialObj, stateObj) => {
+    inputList.forEach(val => {
+      const key = Object.keys(val)[0];
+
+      initialObj[key] = stateObj;
+    });
+  };
+  initState(errorObj, {
+    message: '',
+    inputIsValid: false,
+    inputIsTouched: false,
   });
+  initState(inputObj, '');
 
   const inputRef = useRef();
   const [inputValues, setInputValues] = useState(inputObj);
   const [inputErrors, setInputErrors] = useState(errorObj);
 
   const inputChangeHandler = (obj, key, e) => {
-    console.log(e.target.value);
     const inputValue = e.target.value;
 
-    const setErrorMessage = msg => {
+    const setInputState = msg => {
       setInputValues(prevValues => {
         return { ...prevValues, [key]: inputValue };
       });
@@ -47,31 +48,31 @@ const Form = props => {
     };
 
     if (inputValue.trim().length === 0) {
-      setErrorMessage(`can not be empty.`);
+      setInputState(`can not be empty.`);
     } else if (
       obj.type === 'text' &&
       inputValue.trim().length < obj.min &&
       !obj.max
     ) {
-      setErrorMessage(`must be more than or equal to ${obj.min} letters.`);
+      setInputState(`must be more than or equal to ${obj.min} letters.`);
     } else if (
       obj.type === 'text' &&
       inputValue.trim().length < obj.min &&
       inputValue.trim().length > obj.max
     ) {
-      setErrorMessage(`must be between ${obj.min} and ${obj.max} letters.`);
+      setInputState(`must be between ${obj.min} and ${obj.max} letters.`);
     } else if (
       obj.type === 'number' &&
       +inputValue.trim() < obj.min &&
       !obj.max
     ) {
-      setErrorMessage(`value must be more than or equal to ${obj.min}.`);
+      setInputState(`value must be more than or equal to ${obj.min}.`);
     } else if (
       obj.type === 'number' &&
       +inputValue < obj.min &&
       +inputValue > obj.max
     ) {
-      setErrorMessage(`value must be between ${obj.min} and ${obj.max}.`);
+      setInputState(`value must be between ${obj.min} and ${obj.max}.`);
     } else {
       setInputValues(prevValues => {
         return { ...prevValues, [key]: inputValue };
@@ -85,15 +86,25 @@ const Form = props => {
     }
   };
 
+  const resetInputState = (inputState, stateUpdateFn, initialState) => {
+    Object.keys(inputState).forEach(key => {
+      stateUpdateFn(prevData => {
+        return { ...prevData, [key]: initialState };
+      });
+    });
+  };
+
   const formSubmitHandler = e => {
     e.preventDefault();
 
     let flag = false;
 
+    // Find all the keys where the error has occurred.
     const allInvalidInput = Object.keys(inputErrors).filter(
       key => !inputErrors[key].inputIsTouched
     );
 
+    // Change the error state for all the input using the keys where the error has occurred.
     allInvalidInput.forEach(key => {
       inputList.forEach(val => {
         if (val[key]) {
@@ -116,26 +127,14 @@ const Form = props => {
 
     props.onAddData(inputValues);
 
-    Object.keys(inputValues).forEach(key => {
-      setInputValues(prevData => {
-        return { ...prevData, [key]: '' };
-      });
+    resetInputState(inputValues, setInputValues, '');
+    resetInputState(inputErrors, setInputErrors, {
+      message: '',
+      inputIsValid: false,
+      inputIsTouched: false,
     });
-
-    Object.keys(inputErrors).forEach(key => {
-      setInputErrors(prevData => {
-        return {
-          ...prevData,
-          [key]: { message: '', inputIsValid: false, inputIsTouched: false },
-        };
-      });
-    });
-
     inputRef.current.focus();
-    // console.log(inputValues);
   };
-
-  console.log(inputValues);
 
   return (
     <form onSubmit={formSubmitHandler} className={classes['form']}>
