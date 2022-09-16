@@ -47,10 +47,13 @@ const App = () => {
   const updateUserData = data => {
     const updateData = countriesData.find(data => data.id === updateId);
 
-    updateData.name = data.name;
-    updateData.capital = data.capital;
-    updateData.population = data.population;
-    updateData.popInMil = +convertToMillion(updateData.population);
+    Object.keys(data).forEach(key => {
+      updateData[key] = data[key];
+
+      if (key === 'population') {
+        updateData.popInMil = +convertToMillion(updateData[key]);
+      }
+    });
 
     setCountriesData(prevData => [...prevData]);
     setUpdateItemPrevData(null);

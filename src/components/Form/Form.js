@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 import classes from './Form.module.css';
 
 const Form = props => {
   const { inputList } = props;
+  const { updateItemData } = props;
 
   const errorObj = {};
   const inputObj = {};
@@ -26,6 +27,32 @@ const Form = props => {
   const inputRef = useRef();
   const [inputValues, setInputValues] = useState(inputObj);
   const [inputErrors, setInputErrors] = useState(errorObj);
+
+  useEffect(() => {
+    inputRef.current.focus();
+
+    // Load update data
+    if (updateItemData) {
+      inputList.forEach(el => {
+        const key = Object.keys(el)[0];
+
+        setInputValues(prevValue => {
+          return { ...prevValue, [key]: updateItemData[key] };
+        });
+
+        setInputErrors(prevValue => {
+          return {
+            ...prevValue,
+            [key]: {
+              message: '',
+              inputIsValid: true,
+              inputIsTouched: true,
+            },
+          };
+        });
+      });
+    }
+  }, [updateItemData, inputList]);
 
   const inputChangeHandler = (obj, key, e) => {
     const inputValue = e.target.value;
@@ -86,13 +113,17 @@ const Form = props => {
     }
   };
 
-  const resetInputState = (inputState, stateUpdateFn, initialState) => {
-    Object.keys(inputState).forEach(key => {
-      stateUpdateFn(prevData => {
-        return { ...prevData, [key]: initialState };
+  // Reset input value and error state
+  const resetInputState = useCallback(
+    (inputState, stateUpdateFn, initialState) => {
+      Object.keys(inputState).forEach(key => {
+        stateUpdateFn(prevData => {
+          return { ...prevData, [key]: initialState };
+        });
       });
-    });
-  };
+    },
+    []
+  );
 
   const formSubmitHandler = e => {
     e.preventDefault();
@@ -123,9 +154,15 @@ const Form = props => {
       });
     });
 
+    // If any of the value is invalid, return the function.
     if (flag) return;
 
-    props.onAddData(inputValues);
+    // If update date is available, form submit should update the item else add the item.
+    if (updateItemData) {
+      props.onUpdateData(inputValues);
+    } else {
+      props.onAddData(inputValues);
+    }
 
     resetInputState(inputValues, setInputValues, '');
     resetInputState(inputErrors, setInputErrors, {
@@ -133,6 +170,7 @@ const Form = props => {
       inputIsValid: false,
       inputIsTouched: false,
     });
+
     inputRef.current.focus();
   };
 
@@ -167,7 +205,9 @@ const Form = props => {
       </div>
 
       <div className={classes['form-action-group']}>
-        <button type="submit">Add Country</button>
+        <button type="submit">
+          {updateItemData ? 'Update Country' : 'Add Country'}
+        </button>
       </div>
     </form>
   );
